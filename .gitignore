@@ -41,3 +41,6 @@ uploads/
 # 민감한 정보를 담고 있을 수 있는 로컬 설정 파일은 제외
 application-local.yml
 application-dev.yml
+
+# HELP.md
+HELP.md
