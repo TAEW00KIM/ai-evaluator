@@ -1,0 +1,38 @@
+spring:
+  # 데이터베이스 설정
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/aievaluator_db?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: root
+    password: Rlaxodn0819!
+
+  # JPA (Java Persistence API) 설정
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+  # 파일 업로드 용량 설정
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+logging:
+  level:
+    org.hibernate.type.descriptor.sql: trace
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html   # Swagger UI 접속 경로
+    tags-sorter: alpha       # API 그룹을 알파벳 순으로 정렬
+    operations-sorter: alpha # API 를 알파벳 순으로 정렬
+  api-docs:
+    path: /api-docs          # API 스펙(JSON) 경로
+  info:
+    title: "AI AutoGrader API"
+    description: "딥러닝 기초 과제 자동 채점 시스템 API 명세서"
+    version: "v1.0.0"
