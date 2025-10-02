@@ -4,14 +4,14 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/aievaluator_db?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
     username: root
-    password: Rlaxodn0819!
+    password: ${DB_PASSWORD}
   security:
     oauth2:
       client:
         registration:
           google:
             client-id: "1047847077985-vubdj6hbsrg1r1e5rd8p0eb5l0r17r5m.apps.googleusercontent.com"
-            client-secret: "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"
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - profile
               - email
@@ -19,7 +19,7 @@ spring:
   # JPA (Java Persistence API) 설정
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -47,6 +47,6 @@ springdoc:
     description: "딥러닝 기초 과제 자동 채점 시스템 API 명세서"
     version: "v1.0.0"
 
-admin:
-  emails:
-    - "twkk0819@hufs.ac.kr" # 조교 이메일
+
+external:
+  python-api-url: "http://localhost:8000"

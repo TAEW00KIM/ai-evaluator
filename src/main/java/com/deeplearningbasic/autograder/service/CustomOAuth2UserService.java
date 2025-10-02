@@ -1,10 +1,10 @@
 package com.deeplearningbasic.autograder.service;
 
+import com.deeplearningbasic.autograder.config.AdminProperties;
 import com.deeplearningbasic.autograder.domain.Role;
 import com.deeplearningbasic.autograder.domain.User;
 import com.deeplearningbasic.autograder.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -24,9 +24,7 @@ import java.util.Map;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-
-    @Value("${admin.emails}")
-    private List<String> adminEmails;
+    private final AdminProperties adminProperties;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -51,7 +49,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private User saveOrUpdate(String email, String name) {
         // 관리자 이메일 목록에 포함되어 있는지 확인하여 역할(Role) 결정
-        Role role = adminEmails.contains(email) ? Role.ADMIN : Role.USER;
+        Role role = adminProperties.getEmails().contains(email) ? Role.ADMIN : Role.USER;
 
         User user = userRepository.findByEmail(email)
                 // 이미 존재하는 사용자인 경우, 이름과 역할을 업데이트

@@ -33,7 +33,7 @@ public class User {
         this.role = role;
     }
 
-    public User update(String name) {
+    public User update(String name, Role role) {
         this.name = name;
         this.role = role;
         return this;
