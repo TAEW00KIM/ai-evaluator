@@ -46,3 +46,7 @@ springdoc:
     title: "AI AutoGrader API"
     description: "딥러닝 기초 과제 자동 채점 시스템 API 명세서"
     version: "v1.0.0"
+
+admin:
+  emails:
+    - "twkk0819@hufs.ac.kr" # 조교 이메일

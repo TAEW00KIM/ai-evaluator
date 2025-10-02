@@ -26,6 +26,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",      // Swagger API 문서(JSON)
                                 "/login/**"             // 로그인 관련 경로
                         ).permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )

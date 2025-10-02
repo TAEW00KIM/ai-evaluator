@@ -35,6 +35,7 @@ public class User {
 
     public User update(String name) {
         this.name = name;
+        this.role = role;
         return this;
     }
 }
