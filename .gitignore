@@ -1,0 +1,43 @@
+# Build files
+build/
+!build/tmp/
+out/
+*.jar
+*.war
+
+# Gradle
+.gradle/
+gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle-wrapper.properties
+bin/
+gradlew
+gradlew.bat
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.settings
+.classpath
+
+# Log files
+*.log
+
+# Temp files
+*.tmp
+
+# Mac/Windows system files
+.DS_Store
+Thumbs.db
+
+# Uploaded files directory
+# 학생들이 제출한 파일이 저장되는 'uploads' 폴더는 Git에 포함시키지 않음
+uploads/
+
+# Local configuration files
+# 민감한 정보를 담고 있을 수 있는 로컬 설정 파일은 제외
+application-local.yml
+application-dev.yml
