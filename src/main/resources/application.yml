@@ -5,6 +5,16 @@ spring:
     url: jdbc:mysql://localhost:3306/aievaluator_db?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
     username: root
     password: Rlaxodn0819!
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "1047847077985-vubdj6hbsrg1r1e5rd8p0eb5l0r17r5m.apps.googleusercontent.com"
+            client-secret: "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"
+            scope:
+              - profile
+              - email
 
   # JPA (Java Persistence API) 설정
   jpa:
