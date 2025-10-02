@@ -22,7 +22,7 @@ public class AdminController {
     private final SubmissionService submissionService;
 
     @Operation(summary = "전체 제출 목록 조회", description = "관리자가 모든 학생의 제출 기록을 조회합니다.")
-    @GetMapping("/submissAions")
+    @GetMapping("/submissions")
     public ResponseEntity<ApiResponse<List<AdminSubmissionDto>>> getAllSubmissions() {
         List<AdminSubmissionDto> submissions = submissionService.findAllSubmissionsForAdmin();
         return ResponseEntity.ok(ApiResponse.success(submissions, "전체 제출 목록 조회 성공"));
