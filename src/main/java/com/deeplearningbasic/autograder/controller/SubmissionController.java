@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @Tag(name = "Submissions", description = "학생 과제 제출 및 결과 조회 API")
 @RestController
@@ -76,5 +77,12 @@ public class SubmissionController {
             @RequestBody EvaluationResultDto resultDto) {
         submissionService.updateSubmissionResult(id, resultDto);
         return ResponseEntity.ok(ApiResponse.success("OK", "결과 처리에 성공했습니다."));
+    }
+
+    @Operation(summary = "내 제출 목록 조회", description = "로그인한 사용자의 모든 제출 기록을 조회합니다.")
+    @GetMapping("/submissions/me")
+    public ResponseEntity<ApiResponse<List<SubmissionResponseDto>>> getMySubmissions(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        List<SubmissionResponseDto> mySubmissions = submissionService.findMySubmissions(oAuth2User);
+        return ResponseEntity.ok(ApiResponse.success(mySubmissions, "내 제출 목록 조회 성공"));
     }
 }

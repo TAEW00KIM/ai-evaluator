@@ -6,6 +6,7 @@ import com.deeplearningbasic.autograder.domain.User;
 import com.deeplearningbasic.autograder.dto.AdminSubmissionDto;
 import com.deeplearningbasic.autograder.dto.EvaluationResultDto;
 import com.deeplearningbasic.autograder.dto.SubmissionRequestDto;
+import com.deeplearningbasic.autograder.dto.SubmissionResponseDto;
 import com.deeplearningbasic.autograder.exception.ResourceNotFoundException;
 import com.deeplearningbasic.autograder.repository.SubmissionRepository;
 import com.deeplearningbasic.autograder.repository.UserRepository;
@@ -114,6 +115,14 @@ public class SubmissionService {
             submission.complete(resultDto.getScore(), resultDto.getLog());
         }
         submissionRepository.save(submission);
+    }
+
+    public List<SubmissionResponseDto> findMySubmissions(OAuth2User oAuth2User) {
+        User loggedInUser = findUserByOauth2User(oAuth2User);
+        return submissionRepository.findAllByStudentIdOrderBySubmissionTimeDesc(loggedInUser.getId())
+                .stream()
+                .map(SubmissionResponseDto::new)
+                .collect(Collectors.toList());
     }
 
 
