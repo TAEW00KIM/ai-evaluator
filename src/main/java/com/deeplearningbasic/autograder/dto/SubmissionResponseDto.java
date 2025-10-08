@@ -20,7 +20,7 @@ public class SubmissionResponseDto {
     public SubmissionResponseDto(Submission submission) {
         this.id = submission.getId();
         this.studentId = submission.getStudentId();
-        this.assignmentId = submission.getAssignmentId();
+        this.assignmentId = submission.getAssignment().getId();
         this.submissionTime = submission.getSubmissionTime();
         this.status = submission.getStatus();
         this.score = submission.getScore();

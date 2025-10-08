@@ -17,8 +17,11 @@ public class Submission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignment_id")
+    private Assignment assignment;
+
     private Long studentId;
-    private Long assignmentId;
 
     @Column(nullable = false)
     private String filePath;
@@ -37,11 +40,15 @@ public class Submission {
     private String log;
 
     @Builder
-    public Submission(Long studentId, Long assignmentId, String filePath) {
+    public Submission(Long studentId, Assignment assignment, String filePath) {
         this.studentId = studentId;
-        this.assignmentId = assignmentId;
+        this.assignment = assignment;
         this.filePath = filePath;
         this.status = SubmissionStatus.PENDING;
+    }
+
+    public void running() {
+        this.status = SubmissionStatus.RUNNING;
     }
 
     public void complete(Double score, String log) {

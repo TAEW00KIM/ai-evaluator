@@ -1,0 +1,33 @@
+# prod 환경 프로필 (교수님 서버에 배포할 때 사용)
+
+spring:
+  # 데이터베이스 설정
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/aievaluator_db?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: <운영용 DB 사용자 이름> # 예: prod_user
+    password: ${PROD_DB_PASSWORD}
+
+  # Google OAuth2 클라이언트 설정 (http://<서버 IP> 리디렉션용)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "<운영용 Google Client ID>"
+            client-secret: ${PROD_GOOGLE_CLIENT_SECRET}
+            scope:
+              - profile
+              - email
+
+# 외부 서비스 URL 설정
+external:
+  # 운영 서버에서 실행 중인 Python 채점 서버 주소
+  python-api-url: "http://<교수님 서버 IP>:8000"
+
+# 관리자 계정 이메일 목록
+admin:
+  emails:
+    - "twkk0819@hufs.ac.kr"
+    - "example@hufs.ac.kr"
+    - "<추가할 관리자 이메일>"

@@ -1,5 +1,6 @@
 package com.deeplearningbasic.autograder.service;
 
+import com.deeplearningbasic.autograder.domain.Assignment;
 import com.deeplearningbasic.autograder.domain.Role;
 import com.deeplearningbasic.autograder.domain.Submission;
 import com.deeplearningbasic.autograder.domain.User;
@@ -8,6 +9,7 @@ import com.deeplearningbasic.autograder.dto.EvaluationResultDto;
 import com.deeplearningbasic.autograder.dto.SubmissionRequestDto;
 import com.deeplearningbasic.autograder.dto.SubmissionResponseDto;
 import com.deeplearningbasic.autograder.exception.ResourceNotFoundException;
+import com.deeplearningbasic.autograder.repository.AssignmentRepository;
 import com.deeplearningbasic.autograder.repository.SubmissionRepository;
 import com.deeplearningbasic.autograder.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ public class SubmissionService {
     private final Path fileStorageLocation = Paths.get("uploads").toAbsolutePath().normalize();
     private final UserRepository userRepository;
     private final WebClient.Builder webClientBuilder;
+    private final AssignmentRepository assignmentRepository;
 
     @Value("${external.python-api-url}")
     private String pythonApiUrl;
@@ -48,6 +51,9 @@ public class SubmissionService {
             throw new AccessDeniedException("자신의 이름으로만 과제를 제출할 수 있습니다.");
         }
 
+        Assignment assignment = assignmentRepository.findById(requestDto.getAssignmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("과제를 찾을 수 없습니다. ID: " + requestDto.getAssignmentId()));
+
         // 1. 파일 저장
         String originalFileName = requestDto.getFile().getOriginalFilename();
         String storedFileName = UUID.randomUUID() + "_" + originalFileName;
@@ -57,7 +63,7 @@ public class SubmissionService {
         // 2. Submission 엔티티 생성 및 DB 저장
         Submission submission = Submission.builder()
                 .studentId(requestDto.getStudentId())
-                .assignmentId(requestDto.getAssignmentId())
+                .assignment(assignment)
                 .filePath(targetLocation.toString())
                 .build();
 
@@ -104,6 +110,13 @@ public class SubmissionService {
                     updateSubmissionResult(submissionId, new EvaluationResultDto(0.0, "채점 서버 호출에 실패했습니다: " + error.getMessage()));
                 })
                 .subscribe(); // 실제 요청 실행
+    }
+
+    @Transactional
+    public void updateSubmissionToRunning(Long submissionId) {
+        Submission submission = findById(submissionId);
+        submission.running();
+        // submissionRepository.save(submission); // @Transactional 어노테이션에 의해 자동 저장됨
     }
 
     @Transactional

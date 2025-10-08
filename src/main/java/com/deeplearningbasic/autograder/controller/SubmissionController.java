@@ -71,6 +71,13 @@ public class SubmissionController {
     }
 
     @Hidden
+    @PostMapping("/internal/submissions/{id}/running")
+    public ResponseEntity<ApiResponse<String>> updateSubmissionToRunning(@PathVariable Long id) {
+        submissionService.updateSubmissionToRunning(id);
+        return ResponseEntity.ok(ApiResponse.success("OK", "상태를 RUNNING으로 변경했습니다."));
+    }
+
+    @Hidden
     @PostMapping("/internal/submissions/{id}/complete")
     public ResponseEntity<ApiResponse<String>> updateSubmissionResult(
             @PathVariable Long id,

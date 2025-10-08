@@ -37,8 +37,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/http://localhost:5173/login") // 로그아웃을 처리할 백엔드 경로
-                        .logoutSuccessHandler(oidcLogoutSuccessHandler()) // 커스텀 핸들러 사용
+                        .logoutUrl("/api/logout") // POST 요청을 처리할 로그아웃 경로
+                        .logoutSuccessUrl("http://localhost:5173/login")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .defaultSuccessUrl("http://localhost:5173", true)
@@ -50,18 +52,12 @@ public class SecurityConfig {
         return http.build();
     }
 
-    private LogoutSuccessHandler oidcLogoutSuccessHandler() {
-        return (request, response, authentication) -> {
-            try {
-                // 우리 서비스의 세션을 무효화
-                request.getSession().invalidate();
-            } catch (Exception e) {
-                // 세션이 이미 없는 경우 등 예외 처리
-            }
-            // Google 로그아웃 URL로 리디렉션, 완료 후 우리 로그인 페이지로 돌아오도록 설정
-            String googleLogoutUrl = "https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue=http://localhost:5173/login";
-            response.sendRedirect(googleLogoutUrl);
-        };
-    }
+//    private LogoutSuccessHandler oidcLogoutSuccessHandler() {
+//        return (request, response, authentication) -> {
+//            // Spring Security가 세션을 무효화한 후, Google 로그아웃 URL로 리디렉션합니다.
+//            String googleLogoutUrl = "https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue=http://localhost:5173/login";
+//            response.sendRedirect(googleLogoutUrl);
+//        };
+//    }
 }
 
