@@ -16,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -34,8 +36,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
 
-        if (!email.endsWith("@hufs.ac.kr")) {
-             throw new OAuth2AuthenticationException("Invalid email domain");
+        if (email == null || !email.contains("@")) {
+            throw new OAuth2AuthenticationException("missing_email");
+        }
+        String domain = email.substring(email.indexOf('@') + 1).toLowerCase(Locale.ROOT);
+        // TODO: 필요 시 application-prod.yml 로 빼서 구성 가능. 지금은 임시로 허용 도메인 2개만 둠.
+        List<String> allowedDomains = Arrays.asList("hufs.ac.kr", "gmail.com");
+        if (!allowedDomains.contains(domain)) {
+            throw new OAuth2AuthenticationException("invalid_email_domain:" + domain);
         }
 
         User user = saveOrUpdate(email, name);

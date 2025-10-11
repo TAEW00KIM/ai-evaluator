@@ -1,12 +1,23 @@
 # prod 환경 프로필 (교수님 서버에 배포할 때 사용)
+server:
+  port: ${SERVER_PORT:18080}
+  forward-headers-strategy: native
 
 spring:
   # 데이터베이스 설정
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/aievaluator_db?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
-    username: <운영용 DB 사용자 이름> # 예: prod_user
-    password: ${PROD_DB_PASSWORD}
+    url: jdbc:mysql://127.0.0.1:13306/aievaluator_db?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: aievaluator
+    password: "SvcUser!234"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    show-sql: false
 
   # Google OAuth2 클라이언트 설정 (http://<서버 IP> 리디렉션용)
   security:
@@ -14,20 +25,25 @@ spring:
       client:
         registration:
           google:
-            client-id: "<운영용 Google Client ID>"
+            client-id: "1047847077985-vubdj6hbsrg1r1e5rd8p0eb5l0r17r5m.apps.googleusercontent.com"
             client-secret: ${PROD_GOOGLE_CLIENT_SECRET}
+            redirect-uri: "https://aspen-unimporting-asa.ngrok-free.dev/login/oauth2/code/google"
             scope:
+              - openid
               - profile
               - email
+      provider:
+        google:
+          authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+          token-uri: https://oauth2.googleapis.com/token
+          user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
 
 # 외부 서비스 URL 설정
 external:
-  # 운영 서버에서 실행 중인 Python 채점 서버 주소
-  python-api-url: "http://<교수님 서버 IP>:8000"
+  python-api-url: "http://203.253.70.211:18000"
 
 # 관리자 계정 이메일 목록
 admin:
   emails:
     - "twkk0819@hufs.ac.kr"
     - "example@hufs.ac.kr"
-    - "<추가할 관리자 이메일>"
