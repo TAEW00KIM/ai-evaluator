@@ -2,6 +2,12 @@
 server:
   port: ${SERVER_PORT:18080}
   forward-headers-strategy: native
+  servlet:
+    session:
+      cookie:
+        same-site: none
+        secure: true
+        name: JSESSIONID
 
 spring:
   # 데이터베이스 설정
@@ -40,10 +46,10 @@ spring:
 
 # 외부 서비스 URL 설정
 external:
-  python-api-url: "http://203.253.70.211:18000"
+  python-api-url: "http://127.0.0.1:18000"
 
 # 관리자 계정 이메일 목록
 admin:
   emails:
     - "twkk0819@hufs.ac.kr"
-    - "example@hufs.ac.kr"
+    - "jaekeol.choi@hufs.ac.kr"

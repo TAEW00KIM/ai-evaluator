@@ -1,14 +1,13 @@
 package com.deeplearningbasic.autograder.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "users") // 'user'는 DB 예약어인 경우가 많아 'users' 사용을 권장
 public class User {
 

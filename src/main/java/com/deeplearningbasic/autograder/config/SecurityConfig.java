@@ -1,6 +1,7 @@
 package com.deeplearningbasic.autograder.config;
 
 import com.deeplearningbasic.autograder.service.CustomOAuth2UserService;
+import com.deeplearningbasic.autograder.service.CustomOidcUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOidcUserService customOidcUserService;
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -40,10 +42,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(java.util.List.of(
+                "https://aspen-unimporting-asa.ngrok-free.dev", // ★ 추가
                 "http://203.253.70.211:18081",
                 "http://localhost:5173"
         ));
-        config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedMethods(java.util.List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
         config.setAllowedHeaders(java.util.List.of("*"));
         config.setAllowCredentials(true);
 
@@ -56,31 +59,36 @@ public class SecurityConfig {
     @Order(0)
     public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/swagger-ui.html",
-                             "/swagger-ui/**",
-                             "/api-docs",
-                             "/api-docs/**",
-                             "/v3/api-docs",
-                             "/v3/api-docs/**",
-                             "/webjars/**")
-            .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(authz -> authz.anyRequest().permitAll());
+                .securityMatcher(
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/api-docs",
+                        "/api-docs/**",
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "/webjars/**",
+                        "/favicon.ico",
+                        "/error"
+                )
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(authz -> authz
+                        .anyRequest().permitAll()
+                );
         return http.build();
     }
 
     @Bean
+    @Order(1)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/**")
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
-                                "/", "/login/**",
-                                "/api/internal/**",
-                                "/actuator/**",
-                                "/api/user/me"
+                                "/", "/login", "/login/**",
+                                "/api/internal/**", "/actuator/**", "/api/user/me",
+                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
@@ -88,29 +96,22 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/logout")
-                        .logoutSuccessUrl("http://localhost:5173/login")
+                        .logoutSuccessUrl("/login")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
-                        .userInfoEndpoint(u -> u.userService(customOAuth2UserService))
+                        .userInfoEndpoint(u -> u.oidcUserService(customOidcUserService))
                         .successHandler((req, res, auth) -> {
-                            // ✅ 로그인 성공 시 무조건 홈("/")으로 리다이렉트
-                            res.setStatus(302);
-                            res.setHeader("Location", "/");
+                            System.out.println("LOGIN SUCCESS, authorities=" + auth.getAuthorities());
+                            res.sendRedirect("/");
                         })
                         .failureHandler((req, res, ex) -> {
-                            String reason = ex.getMessage();
-                            if (reason == null) reason = "oauth2_error";
-                            try {
-                                String enc = java.net.URLEncoder.encode(reason, java.nio.charset.StandardCharsets.UTF_8);
-                                res.setStatus(302);
-                                res.setHeader("Location", "/login?error=" + enc);
-                            } catch (Exception e) {
-                                res.setStatus(302);
-                                res.setHeader("Location", "/login?error=oauth2_error");
-                            }
+                            String reason = java.net.URLEncoder.encode(
+                                    ex.getMessage() == null ? "oauth2_error" : ex.getMessage(),
+                                    java.nio.charset.StandardCharsets.UTF_8);
+                            res.sendRedirect("/login?error=" + reason);
                         })
                 );
 

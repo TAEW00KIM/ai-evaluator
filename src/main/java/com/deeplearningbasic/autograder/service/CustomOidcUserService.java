@@ -5,15 +5,13 @@ import com.deeplearningbasic.autograder.domain.Role;
 import com.deeplearningbasic.autograder.domain.User;
 import com.deeplearningbasic.autograder.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,39 +20,35 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+public class CustomOidcUserService extends OidcUserService {
 
     private final UserRepository userRepository;
     private final AdminProperties adminProperties;
 
     @Override
-    public OAuth2User loadUser(OAuth2UserRequest req) throws OAuth2AuthenticationException {
-        OAuth2User oauth2 = super.loadUser(req);
-        Map<String, Object> attrs = new HashMap<>(oauth2.getAttributes());
+    public OidcUser loadUser(OidcUserRequest req) throws OAuth2AuthenticationException {
+        OidcUser oidc = super.loadUser(req);
+        Map<String, Object> attrs = new HashMap<>(oidc.getAttributes());
 
-        // 이메일은 필수
-        final String email = String.valueOf(attrs.getOrDefault("email","")).trim();
+        String email = String.valueOf(attrs.getOrDefault("email", "")).trim();
         if (email.isEmpty()) {
-            throw new OAuth2AuthenticationException("Email not found in OAuth2 response");
+            throw new OAuth2AuthenticationException("Email not found in OIDC response");
         }
-
-        // 이름은 name/given_name 중 하나 사용
-        final String name = Optional.ofNullable((String) attrs.get("name"))
+        String name = Optional.ofNullable((String) attrs.get("name"))
                 .orElseGet(() -> String.valueOf(attrs.getOrDefault("given_name", email))).trim();
 
         User user = saveOrUpdate(email, name);
 
-        Set<GrantedAuthority> authorities = new LinkedHashSet<>(oauth2.getAuthorities());
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())); // ROLE_ADMIN or ROLE_USER
+        // 기존 권한 + ROLE_*
+        Set<GrantedAuthority> authorities = new LinkedHashSet<>(oidc.getAuthorities());
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())); // ROLE_ADMIN/ROLE_USER
 
-        // user-name-attribute 로 email 사용
-        return new DefaultOAuth2User(authorities, attrs, "email");
+        // email을 name attribute로 사용
+        return new DefaultOidcUser(authorities, oidc.getIdToken(), oidc.getUserInfo(), "email");
     }
 
     private User saveOrUpdate(String email, String name) {
-        // 관리자 이메일이면 ADMIN, 아니면 USER
         Role role = adminProperties.getEmails().contains(email) ? Role.ADMIN : Role.USER;
-
         User user = userRepository.findByEmail(email)
                 .map(u -> u.update(name, role))
                 .orElse(User.builder()
