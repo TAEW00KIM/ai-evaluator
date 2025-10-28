@@ -7,10 +7,10 @@ server:
       cookie:
         same-site: none
         secure: true
-        name: JSESSIONID
+        http-only: true
 
 spring:
-  # 데이터베이스 설정
+  # 데이터베이스 설정ssh -p 20022 twkk0819@203.253.70.211
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:13306/aievaluator_db?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
@@ -53,3 +53,6 @@ admin:
   emails:
     - "twkk0819@hufs.ac.kr"
     - "jaekeol.choi@hufs.ac.kr"
+
+app:
+  frontend-base-url: https://aspen-unimporting-asa.ngrok-free.dev

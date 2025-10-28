@@ -3,6 +3,7 @@ package com.deeplearningbasic.autograder.config;
 import com.deeplearningbasic.autograder.service.CustomOAuth2UserService;
 import com.deeplearningbasic.autograder.service.CustomOidcUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -41,10 +42,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(java.util.List.of(
-                "https://aspen-unimporting-asa.ngrok-free.dev", // ★ 추가
-                "http://203.253.70.211:18081",
-                "http://localhost:5173"
+        config.setAllowedOriginPatterns(java.util.List.of(
+                "https://aspen-unimporting-asa.ngrok-free.dev",
+                "http://localhost:5173",
+                "http://203.253.70.211:18081"
         ));
         config.setAllowedMethods(java.util.List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
         config.setAllowedHeaders(java.util.List.of("*"));
@@ -78,6 +79,9 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @Value("${app.frontend-base-url}")
+    private String frontendBaseUrl;
+
     @Bean
     @Order(1)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -96,7 +100,11 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/logout")
-                        .logoutSuccessUrl("/login")
+                        .logoutSuccessHandler((req, res, auth) -> {
+                            String target = frontendBaseUrl;
+                            if (!target.startsWith("http")) target = "/";
+                            res.sendRedirect(target);
+                        })
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 )
@@ -105,13 +113,13 @@ public class SecurityConfig {
                         .userInfoEndpoint(u -> u.oidcUserService(customOidcUserService))
                         .successHandler((req, res, auth) -> {
                             System.out.println("LOGIN SUCCESS, authorities=" + auth.getAuthorities());
-                            res.sendRedirect("/");
+                            res.sendRedirect(frontendBaseUrl); // ✅ FE로 보낸다
                         })
                         .failureHandler((req, res, ex) -> {
                             String reason = java.net.URLEncoder.encode(
                                     ex.getMessage() == null ? "oauth2_error" : ex.getMessage(),
                                     java.nio.charset.StandardCharsets.UTF_8);
-                            res.sendRedirect("/login?error=" + reason);
+                            res.sendRedirect(frontendBaseUrl + "/login?error=" + reason);
                         })
                 );
 
