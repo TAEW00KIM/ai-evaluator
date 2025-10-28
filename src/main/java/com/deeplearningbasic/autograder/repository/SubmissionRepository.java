@@ -12,17 +12,19 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     List<Submission> findAllByStudentIdOrderBySubmissionTimeDesc(Long studentId);
 
     @Query(value = """
-        SELECT
-        s.student_id                           AS studentId,
-        st.name                                AS studentName,         -
-        MAX(s.score)                           AS bestScore,
-        MAX(s.submission_time)                 AS lastSubmittedAt
-        FROM submission s
-        JOIN student st ON st.id = s.student_id  
-        WHERE s.assignment_id = :assignmentId
-        AND s.status = 'COMPLETED'
-        GROUP BY s.student_id, st.name
-        ORDER BY bestScore DESC, lastSubmittedAt ASC
-        """, nativeQuery = true)
+
+            SELECT
+    s.student_id                           AS studentId,
+    u.name                                 AS studentName,
+    MAX(s.score)                           AS bestScore,
+    MAX(s.submission_time)                 AS lastSubmittedAt
+    FROM submission s
+    JOIN users u ON u.id = s.student_id
+    WHERE s.assignment_id = :assignmentId
+    AND s.status = 'COMPLETED'
+    AND u.role != 'ADMIN'  -- <<< ADMIN 역할 제외 조건 추가
+    GROUP BY s.student_id, u.name
+    ORDER BY bestScore DESC, lastSubmittedAt ASC
+    """, nativeQuery = true)
     List<LeaderboardRow> findLeaderboardByAssignment(@Param("assignmentId") Long assignmentId);
 }

@@ -92,7 +92,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/login", "/login/**",
                                 "/api/internal/**", "/actuator/**", "/api/user/me",
-                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**"
+                                "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**","/api/leaderboard/**"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
